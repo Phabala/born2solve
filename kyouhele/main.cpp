@@ -29,11 +29,6 @@ void swap (int idx1, int idx2, Coord *arr)
 	arr[idx2]._y = temp_y;
 }
 
-void heap_Cmp(Coord *arr, bool (*cmp)(Coord, Coord), int size)
-{
-
-}
-
 
 void sort(Coord *arr, bool (*cmp)(Coord, Coord), int size)
 {
