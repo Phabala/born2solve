@@ -67,6 +67,11 @@ git commit -m "yerpark: 250415 리트코드 Longest Substring Without Repeating 
 ```
 
 - 커밋 본문은 각자 자유롭게 적어도 좋습니다.
+- 사정이 있어 문제를 풀지 못할 경우 적어도 하루 전 빈 커밋을 생성해 제목에는 날짜와 `day-off`, 본문에는 사유를 작성합니다.
+
+```bash
+git commit --allow-empty -m "gihokim: 250429~250430 day-off" -m "사유: 가족 여행"
+```
 
 ## ✅ 인증 방법
 
