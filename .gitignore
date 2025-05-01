@@ -1,4 +1,6 @@
 .vscode/
 kchoo/*.cpp
+kchoo/a.out
+kchoo/*.exe
 kyouhele/*.cpp
 kyouhele/a.out
