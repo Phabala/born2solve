@@ -1,9 +1,6 @@
 .vscode/
 kchoo/*.cpp
-<<<<<<< HEAD
-=======
 kchoo/a.out
 kchoo/*.exe
->>>>>>> 2d1cb141c654935deb4c7e40ee6848e3e4df6019
 kyouhele/*.cpp
 kyouhele/a.out
