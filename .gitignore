@@ -1,6 +1,10 @@
 .vscode/
+.idea
+main
 kchoo/*.cpp
 kchoo/a.out
 kchoo/*.exe
 kyouhele/*.cpp
 kyouhele/a.out
+taebkim/*.cpp
+taebkim/a.out
