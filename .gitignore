@@ -4,6 +4,7 @@ main
 kchoo/*.cpp
 kchoo/a.out
 kchoo/*.exe
+kchoo/debug
 kyouhele/*.cpp
 kyouhele/a.out
 taebkim/*.cpp
