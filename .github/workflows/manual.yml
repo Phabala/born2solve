@@ -59,6 +59,6 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Weekly Algorithm Study Report"
           body_file: report.txt
-          to: you@example.com
+          to: kihong2424@gmail.com
           from: "Algorithm Bot <${{ secrets.EMAIL_USERNAME }}>"
 
