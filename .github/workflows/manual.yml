@@ -12,8 +12,8 @@ jobs:
       - name: Count submissions
         id: count
         run: |
-          # 오늘 날짜(토요일) 기준으로 지난 월~금 날짜 계산
-          start_date=$(date -d "last monday -7 days" +%Y-%m-%d)
+          # 오늘 날짜(토요일) 기준으로 이번 주 월~금 날짜 계산
+          start_date=$(date -d "last monday" +%Y-%m-%d)
           dates=()
           for i in {0..4}; do
             dates+=($(date -d "$start_date +$i day" +%y%m%d))
