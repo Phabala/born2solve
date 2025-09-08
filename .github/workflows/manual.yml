@@ -1,0 +1,74 @@
+name: Weekly Algorithm Report
+on:
+  schedule:
+    - cron: '5 15 * * 5' # 매주 토요일 0시 5분 (UTC+0 기준, 한국은 +9h → 15시)
+  workflow_dispatch:
+jobs:
+  count-submissions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Count submissions
+        id: count
+        run: |
+          # 오늘 날짜(토요일) 기준으로 이번 주 월~금 날짜 계산
+          start_date=$(date -d "last monday" +%Y-%m-%d)
+          dates=()
+          for i in {0..4}; do
+            dates+=($(date -d "$start_date +$i day" +%y%m%d))
+          done
+          # 보기 좋은 기간 문자열 (예: 8/11 ~ 8/15)
+          period_start=$(date -d "$start_date" +%-m/%-d)
+          period_end=$(date -d "$start_date +4 day" +%-m/%-d)
+          
+          # 임시 파일에 사용자별 제출 횟수 저장
+          temp_file=$(mktemp)
+          
+          # 각 사용자 디렉토리 탐색
+          for user_dir in $(find . -mindepth 1 -maxdepth 1 -type d ! -name ".git" ! -name ".github"); do
+            user=$(basename "$user_dir")
+            count=0
+            for d in "${dates[@]}"; do
+              if [[ -f "$user_dir/$d.md" ]]; then
+                count=$((count+1))
+              fi
+            done
+            echo "${user}: ${count}회" >> "$temp_file"
+          done
+          
+          # 사전순으로 정렬하여 최종 보고서 생성
+          {
+            echo "${period_start} ~ ${period_end} 알고리즘 제출 기록"
+            echo ""
+            sort "$temp_file"
+            echo ""
+            echo "이번 주 제출 횟수입니다."
+            echo ""
+            echo "day-off, 공휴일을 제외하고 낼 벌금이 없는 분은 이 메시지에 좋아요👍, 있는 분은 송금 후 체크✅ 표시를 해주시기 바랍니다."
+          } > report.txt
+          
+          # 임시 파일 정리
+          rm "$temp_file"
+          
+          # 보고서 내용을 환경 변수로 설정 (멀티라인 처리)
+          {
+            echo 'REPORT_CONTENT<<EOF'
+            cat report.txt
+            echo EOF
+          } >> $GITHUB_ENV
+          
+          # 콘솔에도 출력
+          cat report.txt
+          
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Weekly Algorithm Study Report"
+          body: ${{ env.REPORT_CONTENT }}
+          to: kihong2424@gmail.com
+          from: "Algorithm Bot <${{ secrets.EMAIL_USERNAME }}>"
