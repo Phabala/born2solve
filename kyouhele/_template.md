@@ -4,7 +4,7 @@
 
 **문제 이름 또는 번호**: 
 
-**문제 링크**: https://school.programmers.co.kr/learn/challenges/training?order=acceptance_desc
+**문제 링크**: https://school.programmers.co.kr/skill-assessments/problem-solving/report
 
 **오늘의 메모(선택)**: 
 
