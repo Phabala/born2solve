@@ -22,12 +22,21 @@ jobs:
           period_start=$(date -d "$start_date" +%-m/%-d)
           period_end=$(date -d "$start_date +4 day" +%-m/%-d)
           
+          # exclude.yml에서 제외할 디렉토리 목록 읽기
+          exclude_list=$(grep -A 100 "^exclude:" exclude.yml | grep "^  - " | sed 's/^  - //' | tr '\n' '|' | sed 's/|$//')
+
           # 임시 파일에 사용자별 제출 횟수 저장
           temp_file=$(mktemp)
-          
+
           # 각 사용자 디렉토리 탐색
           for user_dir in $(find . -mindepth 1 -maxdepth 1 -type d ! -name ".git" ! -name ".github"); do
             user=$(basename "$user_dir")
+
+            # exclude.yml에 있는 디렉토리 제외
+            if [[ "$user" =~ ^($exclude_list)$ ]]; then
+              continue
+            fi
+
             count=0
             for d in "${dates[@]}"; do
               if [[ -f "$user_dir/$d.md" ]]; then

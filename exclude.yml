@@ -1,0 +1,10 @@
+# 주간 알고리즘 제출 기록에서 제외할 디렉토리 목록
+exclude:
+  - .git
+  - .github
+  - ahrelee
+  - donjung
+  - esong
+  - hyeojeon
+  - junkwak
+  - kyouhele
