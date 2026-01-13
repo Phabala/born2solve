@@ -12,15 +12,24 @@ jobs:
       - name: Count submissions
         id: count
         run: |
-          # 지난 주 월~일 날짜 계산 (오늘은 월요일)
-          last_week_start=$(date -d "7 days ago" -d "last monday" +%Y-%m-%d)
+          # 이번 주 월요일 찾기
+          today=$(date +%Y-%m-%d)
+          day_of_week=$(date -d "$today" +%u)  # 1=월요일, 7=일요일
+
+          # 지난 주 월요일 계산
+          # 이번 주 월요일에서 7일을 빼면 지난 주 월요일
+          days_since_monday=$((day_of_week - 1))
+          this_monday=$(date -d "$today -$days_since_monday days" +%Y-%m-%d)
+          last_week_start=$(date -d "$this_monday -7 days" +%Y-%m-%d)
+
+          # 지난 주 월~일 날짜 배열
           dates_last_week=()
           for i in {0..6}; do
             dates_last_week+=($(date -d "$last_week_start +$i day" +%y%m%d))
           done
 
           # 지지난 주 월~일 날짜 계산 (2주 연속 미제출 체크용)
-          two_weeks_ago_start=$(date -d "14 days ago" -d "last monday" +%Y-%m-%d)
+          two_weeks_ago_start=$(date -d "$last_week_start -7 days" +%Y-%m-%d)
           dates_two_weeks_ago=()
           for i in {0..6}; do
             dates_two_weeks_ago+=($(date -d "$two_weeks_ago_start +$i day" +%y%m%d))
@@ -78,11 +87,15 @@ jobs:
             echo ""
 
             # 2주 연속 미제출자 표시
+            echo "⚠️  2주 연속 미제출자:"
             if [[ -s "$two_week_zero_file" ]]; then
-              echo "⚠️  2주 연속 미제출자 (강제 퇴출 대상):"
-              sort "$two_week_zero_file" | sed 's/^/  - /'
-              echo ""
+              # 콤마로 구분된 목록 생성
+              two_week_list=$(sort "$two_week_zero_file" | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
+              echo "  - ${two_week_list}"
+            else
+              echo "  - X"
             fi
+            echo ""
 
             echo "지난 주 제출 횟수입니다."
             echo ""
