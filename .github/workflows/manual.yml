@@ -1,7 +1,7 @@
 name: Weekly Algorithm Report
 on:
   schedule:
-    - cron: '5 15 * * 5' # 매주 토요일 0시 5분 (UTC+0 기준, 한국은 +9h → 15시)
+    - cron: '5 15 * * 0' # 매주 월요일 0시 5분 (UTC 일요일 15:05, 한국은 +9h)
   workflow_dispatch:
 jobs:
   count-submissions:
@@ -12,21 +12,30 @@ jobs:
       - name: Count submissions
         id: count
         run: |
-          # 오늘 날짜(토요일) 기준으로 이번 주 월~금 날짜 계산
-          start_date=$(date -d "last monday" +%Y-%m-%d)
-          dates=()
-          for i in {0..4}; do
-            dates+=($(date -d "$start_date +$i day" +%y%m%d))
+          # 지난 주 월~일 날짜 계산 (오늘은 월요일)
+          last_week_start=$(date -d "7 days ago" -d "last monday" +%Y-%m-%d)
+          dates_last_week=()
+          for i in {0..6}; do
+            dates_last_week+=($(date -d "$last_week_start +$i day" +%y%m%d))
           done
-          # 보기 좋은 기간 문자열 (예: 8/11 ~ 8/15)
-          period_start=$(date -d "$start_date" +%-m/%-d)
-          period_end=$(date -d "$start_date +4 day" +%-m/%-d)
-          
+
+          # 지지난 주 월~일 날짜 계산 (2주 연속 미제출 체크용)
+          two_weeks_ago_start=$(date -d "14 days ago" -d "last monday" +%Y-%m-%d)
+          dates_two_weeks_ago=()
+          for i in {0..6}; do
+            dates_two_weeks_ago+=($(date -d "$two_weeks_ago_start +$i day" +%y%m%d))
+          done
+
+          # 보기 좋은 기간 문자열 (예: 1/6 ~ 1/12)
+          period_start=$(date -d "$last_week_start" +%-m/%-d)
+          period_end=$(date -d "$last_week_start +6 day" +%-m/%-d)
+
           # exclude.yml에서 제외할 디렉토리 목록 읽기
           exclude_list=$(grep -A 100 "^exclude:" exclude.yml | grep "^  - " | sed 's/^  - //' | tr '\n' '|' | sed 's/|$//')
 
           # 임시 파일에 사용자별 제출 횟수 저장
           temp_file=$(mktemp)
+          two_week_zero_file=$(mktemp)
 
           # 각 사용자 디렉토리 탐색
           for user_dir in $(find . -mindepth 1 -maxdepth 1 -type d ! -name ".git" ! -name ".github"); do
@@ -37,28 +46,52 @@ jobs:
               continue
             fi
 
-            count=0
-            for d in "${dates[@]}"; do
+            # 지난 주 제출 횟수
+            count_last_week=0
+            for d in "${dates_last_week[@]}"; do
               if [[ -f "$user_dir/$d.md" ]]; then
-                count=$((count+1))
+                count_last_week=$((count_last_week+1))
               fi
             done
-            echo "${user}: ${count}회" >> "$temp_file"
+
+            # 지지난 주 제출 횟수
+            count_two_weeks_ago=0
+            for d in "${dates_two_weeks_ago[@]}"; do
+              if [[ -f "$user_dir/$d.md" ]]; then
+                count_two_weeks_ago=$((count_two_weeks_ago+1))
+              fi
+            done
+
+            echo "${user}: ${count_last_week}회" >> "$temp_file"
+
+            # 2주 연속 0회 제출자 체크
+            if [[ $count_last_week -eq 0 ]] && [[ $count_two_weeks_ago -eq 0 ]]; then
+              echo "${user}" >> "$two_week_zero_file"
+            fi
           done
-          
+
           # 사전순으로 정렬하여 최종 보고서 생성
           {
             echo "${period_start} ~ ${period_end} 알고리즘 제출 기록"
             echo ""
             sort "$temp_file"
             echo ""
-            echo "이번 주 제출 횟수입니다."
+
+            # 2주 연속 미제출자 표시
+            if [[ -s "$two_week_zero_file" ]]; then
+              echo "⚠️  2주 연속 미제출자 (강제 퇴출 대상):"
+              sort "$two_week_zero_file" | sed 's/^/  - /'
+              echo ""
+            fi
+
+            echo "지난 주 제출 횟수입니다."
             echo ""
-            echo "day-off, 공휴일을 제외하고 낼 벌금이 없는 분은 이 메시지에 좋아요👍, 있는 분은 송금 후 체크✅ 표시를 해주시기 바랍니다."
+            echo "제출하지 않은 분은 벌금 2000원을 송금 후 체크✅ 표시를 해주시기 바랍니다."
+            echo "제출한 분은 이 메시지에 좋아요👍를 눌러주세요."
           } > report.txt
-          
+
           # 임시 파일 정리
-          rm "$temp_file"
+          rm "$temp_file" "$two_week_zero_file"
           
           # 보고서 내용을 환경 변수로 설정 (멀티라인 처리)
           {
