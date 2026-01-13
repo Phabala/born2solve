@@ -87,7 +87,7 @@ jobs:
             echo ""
 
             # 2주 연속 미제출자 표시
-            echo "⚠️  2주 연속 미제출자:"
+            echo "2주 연속 미제출자:"
             if [[ -s "$two_week_zero_file" ]]; then
               # 콤마로 구분된 목록 생성
               two_week_list=$(sort "$two_week_zero_file" | tr '\n' ',' | sed 's/,/, /g' | sed 's/, $//')
