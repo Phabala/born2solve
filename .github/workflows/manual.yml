@@ -12,6 +12,9 @@ jobs:
       - name: Count submissions
         id: count
         run: |
+          # 한국 시간대 설정
+          export TZ=Asia/Seoul
+
           # 이번 주 월요일 찾기
           today=$(date +%Y-%m-%d)
           day_of_week=$(date -d "$today" +%u)  # 1=월요일, 7=일요일
